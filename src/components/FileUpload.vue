@@ -34,7 +34,7 @@
 
 <script lang="ts">
 import {
-  defineComponent, ref, reactive, defineEmits,
+  defineComponent, ref, reactive,
 } from 'vue';
 import { TFile } from '../interfaces/TFile';
 
@@ -78,27 +78,30 @@ export default defineComponent({
         // }
       }
     }
-    const test = document.querySelector('.fileUpload__dropZone');
 
-    test?.addEventListener('drag', (e) => {
+    // Feature: Ao arrastar o mouse na janela do navegador, exibe a div com a informação
+    // de que ela é dropavel e ao arrastar sobre a div dropavel ela fica mais escura
+    const test = document.querySelector('html');
+
+    test?.addEventListener('move', (e) => {
       e.preventDefault();
-      console.log('no body');
+      console.log('Move');
     });
 
-    // test?.addEventListener('dragend', (e) => {
-    //   e.preventDefault();
-    //   console.log('saindo do body');
-    // });
+    test?.addEventListener('dragend', (e) => {
+      e.preventDefault();
+      console.log('saindo do body');
+    });
 
-    // window.addEventListener('dragenter', () => {
-    //   console.log('dragging window');
-    //   dragging.value = true;
-    // });
+    window.addEventListener('dragenter', () => {
+      console.log('dragging window');
+      dragging.value = true;
+    });
 
-    // window.addEventListener('dragleave', () => {
-    //   console.log('dragleave window');
-    //   dragging.value = false;
-    // });
+    window.addEventListener('dragleave', () => {
+      console.log('dragleave window');
+      // dragging.value = false;
+    });
 
     // window.ondrag = (e) => console.log('dragging');
 
