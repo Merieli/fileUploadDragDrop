@@ -1,15 +1,31 @@
 <template>
-  <file-upload/>
+  <div>
+    <sidebar-menu :show="show" />
+    <button @click="open">Open Sidebar</button>
+    <file-upload/>
+  </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue';
+import SidebarMenu from '@/components/SidebarMenu.vue';
 import FileUpload from './components/FileUpload.vue';
 
 export default defineComponent({
   name: 'App',
   components: {
     FileUpload,
+    SidebarMenu,
+  },
+  data() {
+    return {
+      show: false,
+    };
+  },
+  methods: {
+    open() {
+      this.show = !this.show;
+    },
   },
 });
 </script>

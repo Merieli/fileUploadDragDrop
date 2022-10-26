@@ -39,7 +39,6 @@ import {
 import { TFile } from '../interfaces/TFile';
 
 export default defineComponent({
-  name: 'FileUpload',
   props: {
     /**
      * Define se o input irá permitir mais de um arquivo para upload.
@@ -81,6 +80,7 @@ export default defineComponent({
 
     // Feature: Ao arrastar o mouse na janela do navegador, exibe a div com a informação
     // de que ela é dropavel e ao arrastar sobre a div dropavel ela fica mais escura
+    // https://stackoverflow.com/questions/3144881/how-do-i-detect-a-html5-drag-event-entering-and-leaving-the-window-like-gmail-d
     const test = document.querySelector('html');
 
     test?.addEventListener('move', (e) => {
