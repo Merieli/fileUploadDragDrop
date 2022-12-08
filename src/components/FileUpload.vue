@@ -1,7 +1,8 @@
 <template>
   <div class="fileUpload">
-    <input class="fileUpload__input"
-      style="display:none"
+    <input
+      class="fileUpload__input"
+      style="display: none"
       type="file"
       accept="image/*"
       id="file"
@@ -9,15 +10,14 @@
       ref="inputFile"
       :multiple="many"
       @change="handleInput"
-    >
-    <div class="fileUpload__clickZone"
-      @click="$refs.inputFile.click"
-    >
+    />
+    <div class="fileUpload__clickZone" @click="$refs.inputFile.click">
       Clique para fazer Upload
-      <div class="fileUpload__dropZone"
+      <div
+        class="fileUpload__dropZone"
         id="test"
         :style="dragging ? 'display: block' : 'display: none'"
-        :class="entering ? 'fileUpload__dropZone--dropable': 'fileUpload__dropZone--' "
+        :class="entering ? 'fileUpload__dropZone--dropable' : 'fileUpload__dropZone--'"
         @click.stop
         @dragenter="entering = true"
         @dragleave.prevent="entering = false"
@@ -28,14 +28,11 @@
       </div>
     </div>
     <span v-if="file">{{ file.name }}</span>
-
   </div>
 </template>
 
 <script lang="ts">
-import {
-  defineComponent, ref, reactive,
-} from 'vue';
+import { defineComponent, reactive, ref } from 'vue';
 import { TFile } from '../interfaces/TFile';
 
 export default defineComponent({
@@ -66,7 +63,7 @@ export default defineComponent({
       console.log(Array.from(file.selectedFiles));
     }
 
-    function handleInput(e: InputEvent) : void {
+    function handleInput(e: InputEvent): void {
       file.selectedFiles = (e.target as HTMLInputElement).files as FileList;
       console.log(Array.from(file.selectedFiles)[0]);
       console.log(file.selectedFiles.length);
@@ -117,7 +114,7 @@ export default defineComponent({
 </script>
 
 <style>
-.fileUpload__clickZone{
+.fileUpload__clickZone {
   background-color: rgba(136, 136, 136, 0.26);
   cursor: pointer;
   display: flex;
@@ -128,7 +125,7 @@ export default defineComponent({
   width: 200px;
   position: relative;
 }
-.fileUpload__dropZone{
+.fileUpload__dropZone {
   background-color: rgb(210, 241, 241);
   border: 2px dashed #41b883;
   display: flex;
@@ -141,10 +138,10 @@ export default defineComponent({
   /* opacity: 0; */
   /* position: absolute; */
   top: 0;
-  transition: .3s ease all;
+  transition: 0.3s ease all;
 }
 
-.fileUpload__dropZone--dropable{
+.fileUpload__dropZone--dropable {
   display: block;
   background-color: rgb(162, 185, 185);
 }
