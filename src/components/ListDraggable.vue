@@ -40,6 +40,8 @@
           class="card"
           draggable="true"
           @dragstart="startDrag($event, item)"
+          @drag="drag()"
+          @dragend="dragEnd()"
         >
           [{{ item.id }}] {{ item.title }}
         </div>
@@ -54,17 +56,18 @@
         @dragenter.prevent="dragEnter()"
         @dragover.prevent="dragOver()"
         @dragleave.prevent="dragLeave()"
-        @drop="onDropVertical($event)"
+        @drop.prevent="onDropVertical($event)"
       >
         <div
           v-for="(card, index) in itemsVertical.done"
           :key="card.id"
           class="card"
+          :class="card.dragging === true ? 'is-dragging' : ''"
           ref="cardItems"
           draggable="true"
           @dragstart="startDragVertical($event, index)"
-          @focus="bla()"
-          @mouseenter="test(index)"
+          @drag="drag()"
+          @dragend="dragEnd()"
         >
           [{{ card.id }}] {{ card.title }}
         </div>
@@ -73,7 +76,8 @@
   </div>
 </template>
 <script lang="ts">
-import { defineComponent, Ref, ref } from 'vue';
+// eslint-disable-next-line
+import { computed, defineComponent, onMounted, Ref, ref } from 'vue';
 
 export default defineComponent({
   setup() {
@@ -85,10 +89,16 @@ export default defineComponent({
       dragging: boolean;
     }
 
+    interface PositionsElement {
+      top: number;
+      bottom: number;
+    }
+
     interface ItemVertical {
       id: number;
       title: string;
       dragging: boolean;
+      position?: PositionsElement;
     }
     interface ListVertical {
       done: ItemVertical[];
@@ -151,53 +161,6 @@ export default defineComponent({
       },
     ]);
 
-    const itemsVertical: Ref<ListVertical> = ref({
-      done: [
-        {
-          id: 0,
-          title: 'Item A',
-          dragging: false,
-        },
-        {
-          id: 1,
-          title: 'Item B',
-          dragging: false,
-        },
-        {
-          id: 2,
-          title: 'Item C',
-          dragging: false,
-        },
-        {
-          id: 3,
-          title: 'Item D',
-          dragging: false,
-        },
-        {
-          id: 4,
-          title: 'Item E',
-          dragging: false,
-        },
-      ],
-    });
-
-    console.log(itemsVertical);
-
-    const dropZoneA = ref(false);
-    const dropZoneB = ref(false);
-
-    const getList = (list: number): Item[] => items.value.filter((item) => item.list === list);
-
-    interface EventDragTransfer {
-      dataTransfer: {
-        dropEffect: string;
-        effectAllowed: string;
-        target: any;
-        setData(name: string, value: any): any;
-        getData(name: string): any;
-        preventDefault(): void;
-      };
-    }
     const getPosition = (index: number): any => {
       const cardHTML: HTMLElement = cardItems.value[index];
       const { top, bottom } = cardHTML.getBoundingClientRect();
@@ -207,7 +170,50 @@ export default defineComponent({
       };
     };
 
-    const startDrag = (event: EventDragTransfer, card: Item): void => {
+    const itemsVertical: Ref<ListVertical> = ref({
+      done: [
+        {
+          id: 0,
+          title: 'Item A',
+          dragging: false,
+          position: computed(() => getPosition(0)),
+        },
+        {
+          id: 1,
+          title: 'Item B',
+          dragging: false,
+          position: computed(() => getPosition(1)),
+        },
+        {
+          id: 2,
+          title: 'Item C',
+          dragging: false,
+          position: computed(() => getPosition(2)),
+        },
+        {
+          id: 3,
+          title: 'Item D',
+          dragging: false,
+          position: computed(() => getPosition(3)),
+        },
+        {
+          id: 4,
+          title: 'Item E',
+          dragging: false,
+          position: computed(() => getPosition(4)),
+        },
+      ],
+    });
+
+    const dropZoneA = ref(false);
+    const dropZoneB = ref(false);
+
+    // eslint-disable-next-line
+    const getList = (list: number): Item[] =>
+      // eslint-disable-next-line
+      items.value.filter((item) => item.list === list);
+
+    const startDrag = (event: DragEvent, card: Item): void => {
       // Ativa o highlight das áreas dropáveis
       dropZoneA.value = true;
       dropZoneB.value = true;
@@ -218,17 +224,16 @@ export default defineComponent({
       event.dataTransfer.effectAllowed = 'move';
       // eslint-disable-next-line
       event.dataTransfer.dropEffect = 'move';
-      event.dataTransfer.setData('ItemID', card.id);
+      event.dataTransfer.setData('ItemID', card.id.toString());
     };
 
-    // onMounted(() => {
-    //   //
-    // });
+    onMounted(() => {
+      // Atribuir a position como o computed após ser montado
+      // Foreach que captura o indice de cada item e atribui a função computed
+      // para calculo do position
+    });
 
-    const startDragVertical = (event: EventDragTransfer, index: number): void => {
-      const { top, bottom } = getPosition(index);
-      console.log(top, bottom);
-
+    const startDragVertical = (event: DragEvent, index: number): void => {
       // Ativa o highlight das áreas dropáveis
       dropZoneA.value = true;
       dropZoneB.value = true;
@@ -238,9 +243,20 @@ export default defineComponent({
       event.dataTransfer.effectAllowed = 'move';
       // eslint-disable-next-line
       event.dataTransfer.dropEffect = 'move';
-      event.dataTransfer.setData('ItemID', index);
-      event.dataTransfer.setData('InitialTop', top);
-      event.dataTransfer.setData('InitialBottom', bottom);
+      event.dataTransfer.setData('ItemID', index.toString());
+
+      // ghostImage
+      const cloneGhost = cardItems.value[index].cloneNode(true);
+      cloneGhost.style.background = 'white';
+      cloneGhost.style.width = '200px';
+      cloneGhost.style.backgroundImage = 'none';
+      cloneGhost.style.pointerEvents = 'none';
+      document.body.appendChild(cloneGhost);
+      event.dataTransfer.setDragImage(cloneGhost, 0, 0);
+
+      setTimeout(() => {
+        document.body.removeChild(cloneGhost);
+      });
     };
 
     const drag = (): void => {
@@ -254,6 +270,8 @@ export default defineComponent({
       dropZoneB.value = false;
       /* eslint-disable */
       items.value.forEach((card) => (card.dragging = false));
+
+      itemsVertical.value.done.forEach((card) => (card.dragging = false));
     };
 
     // dropzone
@@ -282,52 +300,109 @@ export default defineComponent({
       // Atribuir a nova possição do item
       if (itemID) items.value[Number(itemID)].list = list;
 
-      console.log(items.value);
-
       // Remover classe na área que o card está sendo dropado
+    };
+
+    type IndexByPosition = { index: number; lastHalf: number };
+
+    const getIndexByPosition = (dropInHeigth: number): IndexByPosition => {
+      const indexInDroppedPosition: IndexByPosition = itemsVertical.value.done.reduce(
+        (
+          accumulator: IndexByPosition,
+          element: ItemVertical,
+          indexCurrent: number
+        ): IndexByPosition => {
+          const initialTopElement = element.position?.top;
+          const initialBottomElement = element.position?.bottom;
+          const heightOfCard = initialBottomElement - initialTopElement;
+          const halfOfCard = heightOfCard / 2;
+          const halfUp = initialTopElement + halfOfCard;
+
+          const currrentIsClosest =
+            Math.abs(halfUp - dropInHeigth) <
+            Math.abs(accumulator.lastHalf - dropInHeigth)
+              ? true
+              : false;
+          console.log(
+            element.title,
+            dropInHeigth,
+            initialBottomElement,
+            initialTopElement
+          );
+          if (dropInHeigth <= initialBottomElement && dropInHeigth >= initialTopElement) {
+            return {
+              index: indexCurrent,
+              lastHalf: halfUp,
+            };
+          }
+
+          // if (dropInHeigth > halfUp && (currrentIsClosest || accumulator.lastHalf == 0)) {
+          //   console.log(
+          //     'Index [',
+          //     indexCurrent,
+          //     '] Foi solto abaixo da metade do elemento, na altura: ',
+          //     dropInHeigth,
+          //     'em que a metade do elemento é: ',
+          //     halfUp,
+          //     'e a metade do ultimo elemento acumulado é: ',
+          //     accumulator.lastHalf
+          //   );
+
+          //   return {
+          //     index: indexCurrent + 1,
+          //     lastHalf: halfUp,
+          //   };
+          // }
+          // if (dropInHeigth < halfUp && (currrentIsClosest || accumulator.lastHalf == 0)) {
+          //   console.log(
+          //     'Index [',
+          //     indexCurrent,
+          //     '] Foi solto acima da metade no elemento, na altura: ',
+          //     dropInHeigth,
+          //     'em que a metade do elemento é: ',
+          //     halfUp,
+          //     'e a metade do ultimo elemento acumulado é: ',
+          //     accumulator.lastHalf
+          //   );
+          //   return {
+          //     index: indexCurrent,
+          //     lastHalf: halfUp,
+          //   };
+          // }
+
+          return {
+            index: accumulator.index,
+            lastHalf: halfUp,
+          };
+        },
+        {
+          index: 0,
+          lastHalf: 0,
+        }
+      );
+      return indexInDroppedPosition;
     };
 
     const onDropVertical = (event: DragEvent): void => {
       // Pegar o ID do item
-      const itemIndex = event.dataTransfer?.getData('ItemID');
-      const initialTop = event.dataTransfer?.getData('InitialTop');
-      const initialBottom = event.dataTransfer?.getData('InitialBottom');
+      const itemIndex = Number(event.dataTransfer?.getData('ItemID'));
 
       // Atribuir a nova possição do item
       if (itemIndex) {
-        const moveItem = itemsVertical.value.done[Number(itemIndex)];
+        const moveItem = itemsVertical.value.done[itemIndex];
 
         // remove o item da posição anterior
-        itemsVertical.value.done.splice(Number(itemIndex), 1);
+        itemsVertical.value.done.splice(itemIndex, 1);
 
         // Validar a altura do mouse em que foi feito o drop
         const dropInHeigth = event.clientY;
-        console.log(
-          'Posição inicial >>>>>>>> de',
-          initialTop,
-          ' até ',
-          initialBottom,
-          'Mouse soltou em: ',
-          dropInHeigth
-        );
-
-        // Criar uma função getIndexByPosition que itera sobre todos os items usando o ref e capturando suas posições
-        /*
-         na função fazer: 
-         if(dropInHeigth >= initialTop && dropInHeigth <= (initialBottom - (initialBottom - initialTop) / 2) )
-            //pegar o elemento um indice acima de onde o mouse parou
-          
-          if(dropInHeigth > (initialBottom - (initialBottom - initialTop) / 2) && dropInHeigth <= initialBottom )
-            //pegar o elemento um indice abaixo de onde o mouse parou
-          
-         */
+        const moveTo: IndexByPosition = getIndexByPosition(dropInHeigth);
 
         // Adiciona o item a posicao desejada
-        // Substituir o numero 2 abaixo pelo index de onde o mouse esta para soltar o
-        itemsVertical.value.done.splice(2, 0, moveItem);
-      }
+        itemsVertical.value.done.splice(moveTo.index, 0, moveItem);
 
-      console.log('>>>>>', itemsVertical.value.done);
+        return;
+      }
 
       // Remover classe a área que o card está sendo dropado
     };
@@ -357,10 +432,10 @@ export default defineComponent({
   display: flex;
   justify-content: space-between;
   background-color: rgb(231, 240, 180);
-  width: 100%;
   min-height: 200px;
   padding: 20px;
   margin: 30px;
+  max-width: 100vw;
 }
 
 .board {
@@ -376,6 +451,7 @@ export default defineComponent({
   height: auto;
   display: block;
   z-index: 2;
+  padding: 10px 0;
 }
 
 .highlight {
@@ -385,6 +461,7 @@ export default defineComponent({
 .card {
   height: 50px;
   width: calc(100% - 20px);
+  cursor: move;
   background-color: white;
   margin: 10px;
 }

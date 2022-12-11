@@ -4,6 +4,7 @@
     <button @click="open">Open Sidebar</button>
     <!-- <file-upload /> -->
     <list-draggable />
+    <ListVueDraggable />
   </div>
 </template>
 
@@ -12,6 +13,7 @@ import SidebarMenu from '@/components/SidebarMenu.vue';
 import { defineComponent } from 'vue';
 // import FileUpload from './components/FileUpload.vue';
 import ListDraggable from './components/ListDraggable.vue';
+import ListVueDraggable from './components/ListVueDraggable.vue';
 
 export default defineComponent({
   name: 'App',
@@ -19,6 +21,7 @@ export default defineComponent({
     // FileUpload,
     SidebarMenu,
     ListDraggable,
+    ListVueDraggable,
   },
   data() {
     return {
