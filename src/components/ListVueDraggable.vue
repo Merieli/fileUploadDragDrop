@@ -3,55 +3,113 @@
     <h3>Library Vue Draggable {{ draggingInfo }}</h3>
 
     <draggable
-      :list="list"
-      :disabled="!enabled"
-      item-key="name"
-      class="list-group dropzone"
+      :list="list02.lista"
+      :disabled="!activeDrag"
+      class="dropzone"
       ghost-class="ghost"
       :move="checkMove"
-      @start="dragging = true"
-      @end="dragging = false"
+      @start="isDragging = true"
+      @end="isDragging = false"
+      item-key="id"
     >
-      <template #item="{ element }">
-        <div class="list-group-item card" :class="{ 'not-draggable': !enabled }">
-          [{{ element.id }}] {{ element.name }}
+      <template #item="{ element, index }">
+        <div class="list-group-item card" :class="{ 'not-draggable': !activeDrag }">
+          <ComponentButton
+            class="teste"
+            :label="element.name"
+            :initial-value="element.active"
+            @toggle="getInfo(element.id)"
+            @value="getInfo(index)"
+          />
         </div>
       </template>
     </draggable>
   </div>
 </template>
 <script lang="ts">
-import { computed, defineComponent, ref } from 'vue';
+// eslint-disable-next-line
+import { computed, defineComponent, reactive, ref } from 'vue';
 import draggable from 'vuedraggable';
+import ComponentButton from './ComponentButton.vue';
 
 export default defineComponent({
   components: {
     draggable,
+    ComponentButton,
   },
   setup() {
     const list = ref([
-      { name: 'John', text: '', id: 0 },
-      { name: 'Joao', text: '', id: 1 },
-      { name: 'Jean', text: '', id: 2 },
-      { name: 'Merieli', text: '', id: 3 },
-      { name: 'Welington', text: '', id: 4 },
+      {
+        name: 'John',
+        text: '',
+        id: 1,
+        active: true,
+      },
+      {
+        name: 'Joao',
+        text: '',
+        id: 2,
+        active: true,
+      },
+      {
+        name: 'Jean',
+        text: '',
+        id: 3,
+        active: true,
+      },
+      {
+        name: 'Merieli',
+        text: '',
+        id: 4,
+        active: true,
+      },
+      {
+        name: 'Welington',
+        text: '',
+        id: 5,
+        active: true,
+      },
     ]);
-    const enabled = ref(true);
-    const dragging = ref(false);
 
-    const draggingInfo = computed(() => (dragging.value ? 'under drag' : ''));
+    const list02 = reactive({
+      lista: [],
+    });
+    const activeDrag = ref(true);
+    const isDragging = ref(false);
+
+    list02.lista.push({
+      name: 'John',
+      text: '',
+      id: 1,
+      active: true,
+    });
+
+    list02.lista.push({
+      name: 'Joao',
+      text: '',
+      id: 2,
+      active: true,
+    });
+
+    const draggingInfo = computed(() => (isDragging.value ? 'under drag' : ''));
 
     const checkMove = (e: any): void => {
       window.console.log(`Future index: ${e.draggedContext.futureIndex}`);
       console.log(list.value);
     };
 
+    const getInfo = (id: number): void => {
+      console.log('O id: ', id);
+    };
+
     return {
       list,
-      enabled,
-      dragging,
+      list02,
+      activeDrag,
+      isDragging,
       draggingInfo,
       checkMove,
+      getInfo,
     };
   },
 });
